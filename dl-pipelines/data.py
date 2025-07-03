@@ -8,8 +8,8 @@ import cmutils.pytorch as cmtorch
 
 
 
-def get_augment(mean, std, crop, train=False, rotd=0.25, tdel=0.0125,
-                ch4min=0, ch4max=4000, rgbmin=0, rgbmax=20):
+def get_augment(mean, std, crop, train=False, usemulti=False, rotd=0.25, tdel=0.0125,
+                ch4min=0, ch4max=4000, s_min=0, s_max=4000, u_min=0, u_max=4000, rgbmin=0, rgbmax=20):
     """Define dataset preprocessing and augmentation"""
 
     preproc = [
@@ -17,6 +17,14 @@ def get_augment(mean, std, crop, train=False, rotd=0.25, tdel=0.0125,
                                  rgbmin=rgbmin, rgbmax=rgbmax),
         transforms.Normalize(mean, std)
     ]
+
+    if usemulti: 
+        preproc = [ 
+            # TODO update this... 
+            cmtorch.ClampMultiTile(ch4min=ch4min, ch4max=ch4max,
+                                 s_min=s_min, s_max=s_max, u_min=u_min, u_max=u_max),
+            transforms.Normalize(mean, std)
+        ]
 
     augment = []
     if train:
@@ -42,10 +50,12 @@ def get_augment(mean, std, crop, train=False, rotd=0.25, tdel=0.0125,
 def build_dataloader(csv_path,
                      root='/',
                      train=True,
+                     usemulti=False, 
                      batch_size=8,
                      crop=None,
                      normmax=4000,
-                     num_workers=4):
+                     num_workers=4, 
+                     norm=None):
     """
     Build a dataloader for segmentation tasks
 
@@ -78,16 +88,30 @@ def build_dataloader(csv_path,
     lab_counts = [npos, nneg]
 
     # Define transforms and dataset class
-    mean, std = 0, normmax
+    if norm == "CMF_SENS_UNCERT": 
+        assert usemulti 
+        mean, std = cmutils.CMF_SENS_UNCERT 
+    elif norm == "CMF": 
+        mean, std = cmutils.CMF 
+    else: 
+        raise Exception(f"Undefined normalization: {norm}")
+    
+    # mean, std = 0, normmax # TODO why is this true (why does std = normax)? 
     ch4min = 0
+    s_min = 0 
+    u_min = 0
     ch4max = normmax
+    s_max = normmax
+    u_max = normmax
 
     # Define dataset
     dataset = cmtorch.SegmentDatasetCH4(
         root,
         datarows,
-        *get_augment(mean, std, crop, train=train, 
-                     ch4min=ch4min, ch4max=ch4max)
+        *get_augment(mean, std, crop, train=train, usemulti=usemulti,
+                     ch4min=ch4min, ch4max=ch4max, 
+                     s_min=s_min, s_max=s_max, 
+                     u_min=u_min, u_max=u_max)
     )
 
     # Define dataloader

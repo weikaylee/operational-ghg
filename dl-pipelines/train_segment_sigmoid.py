@@ -121,6 +121,12 @@ if __name__ == "__main__":
     parser.add_argument('--weight-file',    help="Restore model weights from existing .pt file")    
     parser.add_argument('--verbose',        action='store_true',
                                             help="verbose output")
+    parser.add_argument('--use-multi',      action='store_true',
+                                            help="Use multi-channel (CMF, sensitivity, uncertainty) inputs")
+    parser.add_argument('--norm',           choices=["CMF", "CMF_SENS_UNCERT"],
+                                            default="CMF",
+                                            help="Dataset statistic to use for normalization")
+
 
     args = parser.parse_args()
 
@@ -169,18 +175,22 @@ if __name__ == "__main__":
  
     # DATA #####################################################################
 
-    # Get dataloaders and loss weights
+    # Get dataloaders and loss weights   
     train_loader, lab_counts = build_dataloader(args.traincsv,
                                                 root=args.dataroot,
                                                 train=True,
                                                 batch_size=args.batch,
-                                                normmax=args.norm_max)
+                                                normmax=args.norm_max, 
+                                                usemulti=args.use_multi, 
+                                                norm=args.norm)
 
     val_loader, _ = build_dataloader(args.valcsv,
                                      root=args.dataroot,
                                      train=False,
                                      batch_size=args.batch,
-                                     normmax=args.norm_max)
+                                     normmax=args.norm_max, 
+                                     usemulti=args.use_multi, 
+                                     norm=args.norm)
 
 
     # MODEL ####################################################################
@@ -432,7 +442,8 @@ if __name__ == "__main__":
                                      root=args.dataroot,
                                      train=False,
                                      batch_size=args.batch,
-                                     normmax=args.norm_max)
+                                     normmax=args.norm_max, 
+                                     norm=args.norm)
 
     # Pred training data set
     train_path = []
@@ -478,7 +489,8 @@ if __name__ == "__main__":
                                      root=args.dataroot,
                                      train=False,
                                      batch_size=args.batch,
-                                     normmax=args.norm_max)
+                                     normmax=args.norm_max, 
+                                     norm=args.norm)
 
     # Pred test data set
     test_path = []
