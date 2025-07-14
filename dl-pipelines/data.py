@@ -9,7 +9,7 @@ import cmutils.pytorch as cmtorch
 
 
 def get_augment(mean, std, crop, train=False, usemulti=False, rotd=0.25, tdel=0.0125,
-                ch4min=0, ch4max=4000, s_min=0, s_max=4000, u_min=0, u_max=4000, rgbmin=0, rgbmax=20):
+                ch4min=0, ch4max=4000, s_min=0, s_max=1.42, u_min=0, u_max=1039.1366, rgbmin=0, rgbmax=20):
     """Define dataset preprocessing and augmentation"""
 
     preproc = [
@@ -20,7 +20,6 @@ def get_augment(mean, std, crop, train=False, usemulti=False, rotd=0.25, tdel=0.
 
     if usemulti: 
         preproc = [ 
-            # TODO update this... 
             cmtorch.ClampMultiTile(ch4min=ch4min, ch4max=ch4max,
                                  s_min=s_min, s_max=s_max, u_min=u_min, u_max=u_max),
             transforms.Normalize(mean, std)

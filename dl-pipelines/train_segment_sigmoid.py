@@ -140,7 +140,7 @@ if __name__ == "__main__":
         trainid = Path(traincsv_parts[-1]).stem
 
     # define wandb projname
-    projname  = f"{trainid}_sigmoid_unetdeep_{args.pool}pool_ch4_crop256_clsaggmax"
+    projname  = f"{trainid}_sigmoid_unetdeep_{args.pool}pool_ch4_crop256_clsaggmax_cmfuq"
 
     # add timestamp to local expname
     expname = f"seg_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{projname}"
@@ -195,8 +195,10 @@ if __name__ == "__main__":
 
     # MODEL ####################################################################
 
-    ## Load Model
+    ## Load Models
     in_ch = 1 # single channel CMF input
+    if args.use_multi: 
+        in_ch = 3 
     unetkws = dict(in_ch=in_ch,
                    num_classes=1, # plume=positive, everything else=negative
                    upsample_pad=False,
@@ -236,9 +238,12 @@ if __name__ == "__main__":
     argsdict['seg_scalef'] = seg_scalef
 
     # start a new wandb run to track this script
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     wandb.init(
         # set the wandb project where this run will be logged
         project=projname,
+        name=timestamp, 
+        entity="kaywei-california-institute-of-technology-caltech",
         # track hyperparameters and run metadata
         config=argsdict,
     )
@@ -288,7 +293,7 @@ if __name__ == "__main__":
         
         train_out_cls,train_tgt_cls = [],[]
         for iter, batch in enumerate(train_pbar):
-            inputs = batch['x'].to(device)
+            inputs = batch['x'].to(device) 
             targets = batch['y'].to(device)
 
             # Standard training without SAM
