@@ -121,9 +121,10 @@ if __name__ == "__main__":
     parser.add_argument('--weight-file',    help="Restore model weights from existing .pt file")    
     parser.add_argument('--verbose',        action='store_true',
                                             help="verbose output")
-    parser.add_argument('--use-multi',      action='store_true',
-                                            help="Use multi-channel (CMF, sensitivity, uncertainty) inputs")
-    parser.add_argument('--norm',           choices=["CMF", "CMF_SENS_UNCERT"],
+    parser.add_argument('--num-channels',   type=int,
+                                            default=1, 
+                                            help="Specify number of channels in input (default=1)")
+    parser.add_argument('--norm',           choices=["CMF", "CMF_SENS_UNCERT", "CMF_SENS", "CMF_UNCERT"],
                                             default="CMF",
                                             help="Dataset statistic to use for normalization")
 
@@ -178,27 +179,25 @@ if __name__ == "__main__":
     # Get dataloaders and loss weights   
     train_loader, lab_counts = build_dataloader(args.traincsv,
                                                 root=args.dataroot,
+                                                num_channels=args.num_channels,
                                                 train=True,
                                                 batch_size=args.batch,
                                                 normmax=args.norm_max, 
-                                                usemulti=args.use_multi, 
                                                 norm=args.norm)
 
     val_loader, _ = build_dataloader(args.valcsv,
                                      root=args.dataroot,
+                                     num_channels=args.num_channels,
                                      train=False,
                                      batch_size=args.batch,
                                      normmax=args.norm_max, 
-                                     usemulti=args.use_multi, 
                                      norm=args.norm)
 
 
     # MODEL ####################################################################
 
     ## Load Models
-    in_ch = 1 # single channel CMF input
-    if args.use_multi: 
-        in_ch = 3 
+    in_ch = args.num_channels # single channel CMF input
     unetkws = dict(in_ch=in_ch,
                    num_classes=1, # plume=positive, everything else=negative
                    upsample_pad=False,
@@ -243,6 +242,7 @@ if __name__ == "__main__":
         # set the wandb project where this run will be logged
         project=projname,
         name=timestamp, 
+        # entity="sourcefinder",
         entity="kaywei-california-institute-of-technology-caltech",
         # track hyperparameters and run metadata
         config=argsdict,

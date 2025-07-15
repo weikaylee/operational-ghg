@@ -8,8 +8,9 @@ import cmutils.pytorch as cmtorch
 
 
 
-def get_augment(mean, std, crop, train=False, usemulti=False, rotd=0.25, tdel=0.0125,
-                ch4min=0, ch4max=4000, s_min=0, s_max=1.42, u_min=0, u_max=1039.1366, rgbmin=0, rgbmax=20):
+def get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max, 
+                train=False, num_channels=1, norm="CMF", rotd=0.25, tdel=0.0125,
+                rgbmin=0, rgbmax=20):
     """Define dataset preprocessing and augmentation"""
 
     preproc = [
@@ -18,9 +19,21 @@ def get_augment(mean, std, crop, train=False, usemulti=False, rotd=0.25, tdel=0.
         transforms.Normalize(mean, std)
     ]
 
-    if usemulti: 
+    if num_channels == 2: 
+        if norm == "CMF_SENS":
+            preproc = [ 
+                cmtorch.ClampTwoTile(ch4min=ch4min, ch4max=ch4max, min_two=s_min, max_two=s_max),
+                transforms.Normalize(mean, std)
+            ]
+        elif norm == "CMF_UNCERT":
+            preproc = [ 
+                cmtorch.ClampTwoTile(ch4min=ch4min, ch4max=ch4max, min_two=u_min, max_two=u_max),
+                transforms.Normalize(mean, std)
+            ]
+    elif num_channels == 3: 
+        assert norm == "CMF_SENS_UNCERT"
         preproc = [ 
-            cmtorch.ClampMultiTile(ch4min=ch4min, ch4max=ch4max,
+            cmtorch.ClampThreeTile(ch4min=ch4min, ch4max=ch4max,
                                  s_min=s_min, s_max=s_max, u_min=u_min, u_max=u_max),
             transforms.Normalize(mean, std)
         ]
@@ -49,10 +62,12 @@ def get_augment(mean, std, crop, train=False, usemulti=False, rotd=0.25, tdel=0.
 def build_dataloader(csv_path,
                      root='/',
                      train=True,
-                     usemulti=False, 
+                     num_channels=1, 
                      batch_size=8,
                      crop=None,
                      normmax=4000,
+                     s_max=1.42, 
+                     u_max=1039.1366, 
                      num_workers=4, 
                      norm=None):
     """
@@ -88,10 +103,13 @@ def build_dataloader(csv_path,
 
     # Define transforms and dataset class
     if norm == "CMF_SENS_UNCERT": 
-        assert usemulti 
         mean, std = cmutils.CMF_SENS_UNCERT 
     elif norm == "CMF": 
         mean, std = cmutils.CMF 
+    elif norm == "CMF_SENS": 
+        mean, std = cmutils.CMF_SENS 
+    elif norm == "CMF_UNCERT": 
+        mean, std = cmutils.CMF_UNCERT
     else: 
         raise Exception(f"Undefined normalization: {norm}")
     
@@ -100,17 +118,17 @@ def build_dataloader(csv_path,
     s_min = 0 
     u_min = 0
     ch4max = normmax
-    s_max = normmax
-    u_max = normmax
 
     # Define dataset
     dataset = cmtorch.SegmentDatasetCH4(
         root,
         datarows,
-        *get_augment(mean, std, crop, train=train, usemulti=usemulti,
-                     ch4min=ch4min, ch4max=ch4max, 
-                     s_min=s_min, s_max=s_max, 
-                     u_min=u_min, u_max=u_max)
+        *get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max, 
+                     train, num_channels, norm)
+        # *get_augment(mean, std, crop, train=train, num_channels=num_channels,
+        #              ch4min=ch4min, ch4max=ch4max, 
+        #              s_min=s_min, s_max=s_max, 
+        #              u_min=u_min, u_max=u_max)
     )
 
     # Define dataloader
