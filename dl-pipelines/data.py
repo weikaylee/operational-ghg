@@ -37,6 +37,12 @@ def get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max,
                                  s_min=s_min, s_max=s_max, u_min=u_min, u_max=u_max),
             transforms.Normalize(mean, std)
         ]
+    
+    if norm == "CMF_MULTI": 
+        preproc = [
+            cmtorch.ClampCMFTile(num_channels, ch4min=ch4min, ch4max=ch4max), 
+            transforms.Normalize(mean, std)
+        ]
 
     augment = []
     if train:

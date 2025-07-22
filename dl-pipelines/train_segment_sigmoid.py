@@ -124,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument('--num-channels',   type=int,
                                             default=1, 
                                             help="Specify number of channels in input (default=1)")
-    parser.add_argument('--norm',           choices=["CMF", "CMF_SENS_UNCERT", "CMF_SENS", "CMF_UNCERT"],
+    parser.add_argument('--norm',           choices=["CMF", "CMF_SENS_UNCERT", "CMF_SENS", "CMF_UNCERT", "CMF_MULTI"],
                                             default="CMF",
                                             help="Dataset statistic to use for normalization")
 
