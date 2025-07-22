@@ -103,13 +103,19 @@ def build_dataloader(csv_path,
 
     # Define transforms and dataset class
     if norm == "CMF_SENS_UNCERT": 
+        assert num_channels == 3
         mean, std = cmutils.CMF_SENS_UNCERT 
-    elif norm == "CMF": 
-        mean, std = cmutils.CMF 
+    elif norm == "CMF":
+        assert num_channels == 1 
+        mean, std = cmutils.CMF
     elif norm == "CMF_SENS": 
+        assert num_channels == 2 
         mean, std = cmutils.CMF_SENS 
     elif norm == "CMF_UNCERT": 
+        assert num_channels == 2 
         mean, std = cmutils.CMF_UNCERT
+    elif norm == "CMF_MULT": 
+        mean, std = cmutils.CMF * num_channels
     else: 
         raise Exception(f"Undefined normalization: {norm}")
     
@@ -123,7 +129,8 @@ def build_dataloader(csv_path,
     dataset = cmtorch.SegmentDatasetCH4(
         root,
         datarows,
-        *get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max, 
+        num_channels, 
+        *get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max,
                      train, num_channels, norm)
         # *get_augment(mean, std, crop, train=train, num_channels=num_channels,
         #              ch4min=ch4min, ch4max=ch4max, 
