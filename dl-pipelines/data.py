@@ -19,7 +19,12 @@ def get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max,
         transforms.Normalize(mean, std)
     ]
 
-    if num_channels == 2: 
+    if norm == "CMF_MULTI": 
+        preproc = [
+            cmtorch.ClampCMFTile(num_channels, ch4min=ch4min, ch4max=ch4max), 
+            transforms.Normalize(mean, std)
+        ]
+    elif num_channels == 2: 
         if norm == "CMF_SENS":
             preproc = [ 
                 cmtorch.ClampTwoTile(ch4min=ch4min, ch4max=ch4max, min_two=s_min, max_two=s_max),
@@ -35,12 +40,6 @@ def get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max,
         preproc = [ 
             cmtorch.ClampThreeTile(ch4min=ch4min, ch4max=ch4max,
                                  s_min=s_min, s_max=s_max, u_min=u_min, u_max=u_max),
-            transforms.Normalize(mean, std)
-        ]
-    
-    if norm == "CMF_MULTI": 
-        preproc = [
-            cmtorch.ClampCMFTile(num_channels, ch4min=ch4min, ch4max=ch4max), 
             transforms.Normalize(mean, std)
         ]
 
@@ -120,8 +119,10 @@ def build_dataloader(csv_path,
     elif norm == "CMF_UNCERT": 
         assert num_channels == 2 
         mean, std = cmutils.CMF_UNCERT
-    elif norm == "CMF_MULT": 
-        mean, std = cmutils.CMF * num_channels
+    elif norm == "CMF_MULTI": 
+        mean, std = cmutils.CMF 
+        mean = mean * num_channels
+        std = std * num_channels
     else: 
         raise Exception(f"Undefined normalization: {norm}")
     
