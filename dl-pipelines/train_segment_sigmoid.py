@@ -127,8 +127,8 @@ if __name__ == "__main__":
     parser.add_argument('--norm',           choices=["CMF", "CMF_SENS_UNCERT", "CMF_SENS", "CMF_UNCERT", "CMF_MULTI"],
                                             default="CMF",
                                             help="Dataset statistic to use for normalization")
-
-
+    parser.add_argument('--sample', action='store_true', help="Randomly sample from N(input, uncertainty) num-channel times at each pixel. Assumes input is three-channel CMF + sensitivity + uncertainty.")
+    parser.add_argument('--correct', action='store_true', help="Correct CMF retrieval by dividing out sensitivity. Assumes input is three-channel CMF + sensitivity + uncertainty.")
     args = parser.parse_args()
 
     # SETUP ####################################################################
@@ -181,6 +181,8 @@ if __name__ == "__main__":
                                                 root=args.dataroot,
                                                 num_channels=args.num_channels,
                                                 train=True,
+                                                sample=args.sample, 
+                                                correct=args.correct,
                                                 batch_size=args.batch,
                                                 normmax=args.norm_max, 
                                                 norm=args.norm)
