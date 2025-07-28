@@ -74,7 +74,9 @@ def build_dataloader(csv_path,
                      s_max=1.42, 
                      u_max=1039.1366, 
                      num_workers=4, 
-                     norm=None):
+                     norm=None, 
+                     sample=False, 
+                     correct=False):
     """
     Build a dataloader for segmentation tasks
 
@@ -137,6 +139,8 @@ def build_dataloader(csv_path,
         root,
         datarows,
         num_channels, 
+        sample, 
+        correct, 
         *get_augment(mean, std, crop, ch4min, ch4max, s_min, s_max, u_min, u_max,
                      train, num_channels, norm)
         # *get_augment(mean, std, crop, train=train, num_channels=num_channels,
