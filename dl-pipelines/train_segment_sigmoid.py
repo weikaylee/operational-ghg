@@ -191,6 +191,8 @@ if __name__ == "__main__":
                                      root=args.dataroot,
                                      num_channels=args.num_channels,
                                      train=False,
+                                     sample=args.sample, 
+                                     correct=args.correct, 
                                      batch_size=args.batch,
                                      normmax=args.norm_max, 
                                      norm=args.norm)
@@ -447,7 +449,10 @@ if __name__ == "__main__":
     ## Evaluation dataloader, training set performance
     dataloader, _ = build_dataloader(args.traincsv,
                                      root=args.dataroot,
+                                     num_channels=args.num_channels,
                                      train=False,
+                                     sample=args.sample, 
+                                     correct=args.correct,
                                      batch_size=args.batch,
                                      normmax=args.norm_max, 
                                      norm=args.norm)
@@ -494,7 +499,10 @@ if __name__ == "__main__":
     # Test set dataloader
     dataloader, _ = build_dataloader(args.valcsv,
                                      root=args.dataroot,
+                                     num_channels=args.num_channels, 
                                      train=False,
+                                     sample=args.sample, 
+                                     correct=args.correct, 
                                      batch_size=args.batch,
                                      normmax=args.norm_max, 
                                      norm=args.norm)

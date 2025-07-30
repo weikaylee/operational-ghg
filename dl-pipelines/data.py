@@ -121,7 +121,7 @@ def build_dataloader(csv_path,
     elif norm == "CMF_UNCERT": 
         assert num_channels == 2 
         mean, std = cmutils.CMF_UNCERT
-    elif norm == "CMF_MULTI": 
+    elif norm == "CMF_MULTI":
         mean, std = cmutils.CMF 
         mean = mean * num_channels
         std = std * num_channels
